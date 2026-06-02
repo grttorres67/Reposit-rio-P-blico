@@ -3,18 +3,23 @@ package com.fatesg.servicos;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fatesg.apis.ServidorDeDadosFuncionarioApi;
 import com.fatesg.apis.ServidorDeDadosSalarioApi;
 import com.fatesg.biblioteca.dtos.FolhaDto;
+import com.fatesg.biblioteca.dtos.FuncionarioDto;
 import com.fatesg.biblioteca.dtos.ReciboDto;
 import com.fatesg.biblioteca.dtos.SalarioDto;
 import com.fatesg.biblioteca.interfaces.ServidorDeCalculoFolhaInterface;
 
 public class CalculoDeFolhaService implements ServidorDeCalculoFolhaInterface {
     private ServidorDeDadosSalarioApi stub;
+    private ServidorDeDadosFuncionarioApi stubFuncionario;
 
     public CalculoDeFolhaService() {
         this.stub = new ServidorDeDadosSalarioApi();
         this.stub.Conectar();
+        this.stubFuncionario = new ServidorDeDadosFuncionarioApi();
+        this.stubFuncionario.Conectar();
     }
 
     @Override
@@ -95,10 +100,44 @@ public class CalculoDeFolhaService implements ServidorDeCalculoFolhaInterface {
     }
 
     @Override
-    public FolhaDto calcularFolhaDePagamentoDoDepartamento(String arg0, byte arg1, short arg2,
-            HashMap<String, Double> arg3) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'calcularFolhaDePagamentoDoDepartamento'");
+    public FolhaDto calcularFolhaDePagamentoDoDepartamento(String idDepartamento, byte mes, short ano,
+            HashMap<String, Double> descontos) {
+        try {
+            FolhaDto folha = new FolhaDto(mes, ano);
+            int offset = 0;
+            int limit = 50;
+            List<FuncionarioDto> funcionarios;
+            
+            // Itera pelos funcionários em paginação
+            do {
+                funcionarios = stubFuncionario.listarFuncionarios(limit, offset);
+                
+                for (FuncionarioDto funcionario : funcionarios) {
+                    // Verifica se o funcionário pertence ao departamento especificado
+                    if (funcionario.getDepartamento() != null && 
+                        funcionario.getDepartamento().getId().equals(idDepartamento)) {
+                        
+                        // Calcula o recibo de pagamento para o funcionário
+                        ReciboDto recibo = calcularReciboDePagamento(
+                                funcionario.getId(),
+                                mes,
+                                ano,
+                                descontos);
+                        
+                        if (recibo != null) {
+                            folha.addRecibo(recibo);
+                        }
+                    }
+                }
+                offset++;
+            } while (funcionarios.size() > 0);
+            
+            return folha;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

@@ -3,7 +3,9 @@ package com.ramyres.ui.tui;
 import java.util.Scanner;
 
 import com.ramyres.servicos.BaskaraService;
+import com.ramyres.servicos.PalavrasService;
 import com.ramyres.servicos.PiService;
+import com.ramyres.model.EstatisticaDoTexto;
 
 public class UserInterfaceTui {
 
@@ -44,6 +46,30 @@ public class UserInterfaceTui {
         System.out.println("Resultado: " + result.toString());
     }
 
+    private void callPalavrasService(Scanner scanner) {
+        System.out.println("Informe o texto para análise:");
+        scanner.nextLine(); // Limpar o buffer do teclado
+        String texto = scanner.nextLine();
+
+        System.out.println("Analisando texto...");
+        
+        PalavrasService palavrasService = new PalavrasService();
+        
+        EstatisticaDoTexto result = palavrasService.ObterEstatistica(texto);
+        
+        System.out.println("\n--- Estatísticas do Texto ---");
+        System.out.println("Quantidade de letras: " + result.qtdLetras);
+        System.out.println("Quantidade de palavras: " + result.qtdPalavras);
+        System.out.println("Quantidade de vogais: " + result.qtdVogal);
+        System.out.println("Quantidade de vogais acentuadas: " + result.qtdVogalAcentuada);
+        System.out.println("Quantidade de consoantes: " + result.qtdConsoantes);
+        System.out.println("Quantidade de espaços: " + result.qtdEspacos);
+        System.out.println("Quantidade de palavras com tamanho par: " + result.qtdPalavrasPar);
+        System.out.println("Quantidade de palavras com tamanho ímpar: " + result.qtdPalavrasImpar);
+        System.out.println("Quantidade de linhas: " + result.qtdDeLinhas);
+        System.out.println("----------------------------\n");
+    }
+
     public void start() {
         Scanner scanner = new Scanner(System.in);
 
@@ -60,7 +86,7 @@ public class UserInterfaceTui {
                     callBaskaraService(scanner);
                     break;
                 case 3:
-                    // Call the text statistics method
+                    callPalavrasService(scanner);
                     break;
                 case 0:
                     System.out.println("Saindo...");
